@@ -1,6 +1,56 @@
 <!doctype html><html lang="en"><head><meta charset="UTF-8"><title>User Registration</title><link rel="stylesheet" href="/static/css/style.css"></head><body class="auth-body">
-<div class="auth-left"><h1>User Registration</h1><p>This is a public self-registration page. Standard users can create accounts here and immediately start exploring CondensateDB.</p><p>Administrator accounts are maintained in the back-office system.</p></div>
-<div class="auth-card"><h2>Create Account</h2><div class="form-row"><label>Username *</label><input id="username" class="input"></div><div class="form-row"><label>Password *</label><input id="password" type="password" class="input"></div><div class="form-row"><label>Gender</label><input id="gender" class="input"></div><div class="form-row"><label>Phone</label><input id="phone" class="input"></div><div class="form-row"><label>Email</label><input id="email" class="input"></div><button class="btn primary" onclick="reg()">Register</button> <button class="btn" onclick="location.href='/login'">Back to Login</button></div>
+<div class="auth-shell">
+  <section class="auth-left">
+    <h1>User Registration</h1>
+    <p>Public registration is enabled for standard users. Create an account to explore CondensateDB directly.</p>
+    <p>Administrator accounts are managed only through back-office workflow and remain isolated.</p>
+    <div class="feature-strip">
+      <div class="feature"><strong>Starter Ready</strong><span>Create your account in under one minute and start browsing immediately.</span></div>
+      <div class="feature"><strong>Research Focused</strong><span>Explore proteins, condensates, diseases, and published evidence from one portal.</span></div>
+    </div>
+    <a class="home-link" href="/login">Back to Sign In</a>
+  </section>
+  <section class="auth-card">
+    <h2 class="auth-title">Create Account</h2>
+    <div class="form-row"><label>Username *</label><input id="username" class="input" placeholder="Pick a unique username"></div>
+    <div class="form-row"><label>Password *</label><input id="password" type="password" class="input" placeholder="Minimum 8 characters"></div>
+    <div class="form-row"><label>Gender</label><input id="gender" class="input" placeholder="Optional"></div>
+    <div class="form-row"><label>Phone</label><input id="phone" class="input" placeholder="Optional"></div>
+    <div class="form-row"><label>Email</label><input id="email" class="input" placeholder="Optional"></div>
+    <div class="btn-group">
+      <button class="btn primary" id="registerBtn" onclick="reg()">Register</button>
+      <button class="btn" onclick="location.href='/login'">Back to Login</button>
+    </div>
+  </section>
+</div>
 <script>
-async function reg(){const data={username:username.value.trim(),password:password.value.trim(),gender:gender.value.trim(),phone:phone.value.trim(),email:email.value.trim()};if(!data.username||!data.password){alert('Username and password are required');return}const r=await fetch('/api/auth/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});const j=await r.json();alert(j.msg);if(j.code===200)location.href='/login'}
+function setBusy(btn, busy) {
+  btn.classList.toggle('loading', !!busy);
+  btn.disabled = !!busy;
+}
+async function reg() {
+  const btn = document.getElementById('registerBtn');
+  const data = {
+    username: username.value.trim(),
+    password: password.value.trim(),
+    gender: gender.value.trim(),
+    phone: phone.value.trim(),
+    email: email.value.trim()
+  };
+  if (!data.username || !data.password) { alert('Username and password are required'); return; }
+  if (data.password.length < 8) { alert('Password should be at least 8 characters'); return; }
+  setBusy(btn, true);
+  try {
+    const r = await fetch('/api/auth/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+    const j = await r.json();
+    alert(j.msg);
+    if (j.code === 200) location.href = '/login';
+  } finally {
+    setBusy(btn, false);
+  }
+}
 </script></body></html>

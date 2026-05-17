@@ -1,7 +1,18 @@
-const token = localStorage.getItem('token');
-function authHeaders(){return {'Content-Type':'application/json','Authorization':'Bearer '+localStorage.getItem('token')}}
-function checkLogin(){if(!localStorage.getItem('token')) location.href='login'}
-function logout(){localStorage.clear();location.href='login'}
+function getToken(){return (localStorage.getItem('token') || '').trim()}
+function hasUsableToken(token){
+  return typeof token === 'string' && token !== '' && token !== 'undefined' && token !== 'null' && token.split('.').length === 3;
+}
+function authHeaders(){
+  const token = getToken();
+  const headers = {'Content-Type':'application/json'};
+  if (hasUsableToken(token)) headers.Authorization = `Bearer ${token}`;
+  return headers;
+}
+function checkLogin(){
+  const token = getToken();
+  if(!hasUsableToken(token)){ localStorage.removeItem('token'); localStorage.removeItem('user'); location.href='login'; }
+}
+function logout(){localStorage.removeItem('token');localStorage.removeItem('user');location.href='login'}
 async function api(url,opt={}){opt.headers=Object.assign(authHeaders(),opt.headers||{});const r=await fetch(url,opt);let j;try{j=await r.json()}catch(e){throw new Error('Invalid server response')}if(j.code===401){alert('Login expired');logout()} if(j.code!==200) throw new Error(j.msg);return j.data}
 function showModal(title, html){document.getElementById('modalTitle').innerText=title;document.getElementById('modalBody').innerHTML=html;document.getElementById('modalMask').style.display='flex'}
 function closeModal(){document.getElementById('modalMask').style.display='none'}

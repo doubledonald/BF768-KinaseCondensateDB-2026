@@ -89,6 +89,26 @@ please pre-create admins in your database migration/import flow.
 - For HTTPS/production hosting, serve behind a reverse proxy and set `SERVER_HOST=0.0.0.0`.
 - After deployment, you can directly share `https://<your-domain>/register` so anyone can create a standard user account.
 
+## 5. Quick Deploy (Render)
+
+This repo includes `render.yaml`, so you can deploy in one pass from Render:
+
+1. Create a new **Web Service** in Render and connect this repository.
+2. Keep branch as `main`; Render will detect `render.yaml`.
+3. Add mandatory environment variables in Render dashboard:
+   - `DATABASE_URL` (required)
+   - `SECRET_KEY` (strong random string)
+   - `JWT_SECRET` (strong random string)
+   - `ADMIN_BOOTSTRAP_PASSWORD` (strong admin password)
+   - Optional: `ADMIN_BOOTSTRAP_USERNAME`, `ADMIN_BOOTSTRAP_EMAIL`, `CORS_ORIGINS`
+4. After deployment, open:
+   - Login: `https://<render-service-url>/login`
+   - Register: `https://<render-service-url>/register`
+   - Home: `https://<render-service-url>/index`
+   - Admin: `https://<render-service-url>/admin` (admin token required)
+
+Render will expose a public HTTPS URL once the service is live.
+
 ## 中文说明（简版）
 
 当前版本已支持公开访问与公开注册，页面入口不再依赖 SSH tunnel。  

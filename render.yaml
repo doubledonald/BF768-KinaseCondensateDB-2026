@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: bf768-kinasecondensatedb
+    runtime: python
+    plan: free
+    branch: main
+    rootDir: .
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn -w 2 -b 0.0.0.0:$PORT app:app
+    envVars:
+      - key: FLASK_ENV
+        value: production
+      - key: SERVER_HOST
+        value: 0.0.0.0
+      - key: SERVER_PORT
+        value: "5000"
+      - key: DEBUG
+        value: "false"
+      - key: ALLOW_PUBLIC_REGISTRATION
+        value: "true"
+      - key: ADMIN_BOOTSTRAP_ENABLED
+        value: "true"

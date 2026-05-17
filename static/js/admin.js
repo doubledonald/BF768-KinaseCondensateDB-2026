@@ -34,7 +34,7 @@ function renderManage() {
 async function loadList(p = 1) {
   state.page = p;
   const kw = document.getElementById('kw')?.value || '';
-  let url = `/api/${current}?page=${p}&size=${state.size}&keyword=${encodeURIComponent(kw)}`;
+  let url = `api/${current}?page=${p}&size=${state.size}&keyword=${encodeURIComponent(kw)}`;
   if (current === 'admin-logs') {
     url += `&action_type=${encodeURIComponent(document.getElementById('actionType')?.value || '')}&target_table=${encodeURIComponent(document.getElementById('targetTable')?.value || '')}`;
   }
@@ -55,7 +55,7 @@ async function loadList(p = 1) {
 }
 
 async function selectOptions(name, selected) {
-  const rows = await api(`/api/options/${name}`);
+  const rows = await api(`api/options/${name}`);
   return rows.map(o => `<option value="${esc(o.value)}" ${String(o.value) === String(selected) ? 'selected' : ''}>${esc(o.label)} (${esc(o.value)})</option>`).join('');
 }
 
@@ -86,7 +86,7 @@ async function saveForm(id) {
   c.fields.forEach(f => data[f] = document.getElementById('f_' + f)?.value);
   if (current === 'users') { data.role = 'user'; data.status = 1; }
   try {
-    await api(`/api/${current}${id ? '/' + id : ''}`, { method: id ? 'PUT' : 'POST', body: JSON.stringify(data) });
+    await api(`api/${current}${id ? '/' + id : ''}`, { method: id ? 'PUT' : 'POST', body: JSON.stringify(data) });
     closeModal();
     loadList(state.page);
   } catch (e) { alert(e.message); }
@@ -94,41 +94,41 @@ async function saveForm(id) {
 
 async function delRow(id) {
   if (!confirm('Delete this record?')) return;
-  try { await api(`/api/${current}/${id}`, { method: 'DELETE' }); loadList(state.page); } catch (e) { alert(e.message); }
+  try { await api(`api/${current}/${id}`, { method: 'DELETE' }); loadList(state.page); } catch (e) { alert(e.message); }
 }
 
 async function toggleUser(id, status) {
   if (!confirm(status == 1 ? 'Disable this user?' : 'Enable this user?')) return;
-  await api(`/api/users/${id}/toggle`, { method: 'PUT' });
+  await api(`api/users/${id}/toggle`, { method: 'PUT' });
   loadList(state.page);
 }
 
 async function managePC(pid) {
-  const rows = await api(`/api/proteins/${pid}/condensates`);
-  showModal('Maintain Protein-Condensate Relations', `<div class="toolbar"><input id="rel_cid" class="input" placeholder="Condensate ID"><button class="btn primary" onclick="addPC(${pid})">Add Relation</button></div>${tableHtml([['protein_condensate_id', 'Relation ID'], ['condensate_id', 'Condensate ID'], ['condensate_uid', 'UID'], ['condensate_name', 'Name'], ['evidence_source', 'Evidence Source']], rows, r => `<button class="btn danger small" onclick="delRel('/api/relations/protein-condensate/${r.protein_condensate_id}',()=>managePC(${pid}))">Delete</button>`)}`);
+  const rows = await api(`api/proteins/${pid}/condensates`);
+  showModal('Maintain Protein-Condensate Relations', `<div class="toolbar"><input id="rel_cid" class="input" placeholder="Condensate ID"><button class="btn primary" onclick="addPC(${pid})">Add Relation</button></div>${tableHtml([['protein_condensate_id', 'Relation ID'], ['condensate_id', 'Condensate ID'], ['condensate_uid', 'UID'], ['condensate_name', 'Name'], ['evidence_source', 'Evidence Source']], rows, r => `<button class="btn danger small" onclick="delRel('api/relations/protein-condensate/${r.protein_condensate_id}',()=>managePC(${pid}))">Delete</button>`)}`);
 }
-async function addPC(pid) { await api('/api/relations/protein-condensate', { method: 'POST', body: JSON.stringify({ protein_id: pid, condensate_id: rel_cid.value, evidence_source: 'manual' }) }); managePC(pid); }
+async function addPC(pid) { await api('api/relations/protein-condensate', { method: 'POST', body: JSON.stringify({ protein_id: pid, condensate_id: rel_cid.value, evidence_source: 'manual' }) }); managePC(pid); }
 
 async function manageCC(cid) {
-  const rows = await api(`/api/condensates/${cid}/cmods`);
-  showModal('Maintain Condensate-Chemical Modifier Relations', `<div class="toolbar"><input id="rel_mid" class="input" placeholder="C-mod ID"><input id="rel_pmid" class="input" placeholder="PMID"><button class="btn primary" onclick="addCC(${cid})">Add Relation</button></div>${tableHtml([['condensate_cmod_id', 'Relation ID'], ['cmod_id', 'C-mod ID'], ['cmod_name', 'Chemical Modifier'], ['biomolecular_type', 'Biomolecular Type'], ['phenotypic_class', 'Phenotypic Class'], ['pmid', 'PMID']], rows, r => `<button class="btn danger small" onclick="delRel('/api/relations/condensate-cmod/${r.condensate_cmod_id}',()=>manageCC(${cid}))">Delete</button>`)}`);
+  const rows = await api(`api/condensates/${cid}/cmods`);
+  showModal('Maintain Condensate-Chemical Modifier Relations', `<div class="toolbar"><input id="rel_mid" class="input" placeholder="C-mod ID"><input id="rel_pmid" class="input" placeholder="PMID"><button class="btn primary" onclick="addCC(${cid})">Add Relation</button></div>${tableHtml([['condensate_cmod_id', 'Relation ID'], ['cmod_id', 'C-mod ID'], ['cmod_name', 'Chemical Modifier'], ['biomolecular_type', 'Biomolecular Type'], ['phenotypic_class', 'Phenotypic Class'], ['pmid', 'PMID']], rows, r => `<button class="btn danger small" onclick="delRel('api/relations/condensate-cmod/${r.condensate_cmod_id}',()=>manageCC(${cid}))">Delete</button>`)}`);
 }
-async function addCC(cid) { await api('/api/relations/condensate-cmod', { method: 'POST', body: JSON.stringify({ condensate_id: cid, cmod_id: rel_mid.value, pmid: rel_pmid.value || null }) }); manageCC(cid); }
+async function addCC(cid) { await api('api/relations/condensate-cmod', { method: 'POST', body: JSON.stringify({ condensate_id: cid, cmod_id: rel_mid.value, pmid: rel_pmid.value || null }) }); manageCC(cid); }
 
 async function manageCD(cid) {
-  const rows = await api(`/api/condensates/${cid}/diseases`);
-  showModal('Maintain Condensate-Disease Relations', `<div class="toolbar"><input id="rel_did" class="input" placeholder="Disease ID"><input id="rel_pmid" class="input" placeholder="PMID"></div><textarea id="rel_dys" class="input" placeholder="Dysregulation description"></textarea><br><br><textarea id="rel_marker" class="input" placeholder="Condensate markers"></textarea><br><br><button class="btn primary" onclick="addCD(${cid})">Add Relation</button><p>Dysregulation descriptions, condensate markers, and PMID evidence IDs are maintained here.</p>${tableHtml([['condensate_disease_id', 'Relation ID'], ['disease_id', 'Disease ID'], ['disease_name', 'Disease Name'], ['dysregulation_type', 'Dysregulation Type'], ['condensate_markers', 'Markers'], ['pmid', 'PMID']], rows, r => `<button class="btn danger small" onclick="delRel('/api/relations/condensate-disease/${r.condensate_disease_id}',()=>manageCD(${cid}))">Delete</button>`)}`);
+  const rows = await api(`api/condensates/${cid}/diseases`);
+  showModal('Maintain Condensate-Disease Relations', `<div class="toolbar"><input id="rel_did" class="input" placeholder="Disease ID"><input id="rel_pmid" class="input" placeholder="PMID"></div><textarea id="rel_dys" class="input" placeholder="Dysregulation description"></textarea><br><br><textarea id="rel_marker" class="input" placeholder="Condensate markers"></textarea><br><br><button class="btn primary" onclick="addCD(${cid})">Add Relation</button><p>Dysregulation descriptions, condensate markers, and PMID evidence IDs are maintained here.</p>${tableHtml([['condensate_disease_id', 'Relation ID'], ['disease_id', 'Disease ID'], ['disease_name', 'Disease Name'], ['dysregulation_type', 'Dysregulation Type'], ['condensate_markers', 'Markers'], ['pmid', 'PMID']], rows, r => `<button class="btn danger small" onclick="delRel('api/relations/condensate-disease/${r.condensate_disease_id}',()=>manageCD(${cid}))">Delete</button>`)}`);
 }
-async function addCD(cid) { await api('/api/relations/condensate-disease', { method: 'POST', body: JSON.stringify({ condensate_id: cid, disease_id: rel_did.value, pmid: rel_pmid.value || null, dysregulation_type: rel_dys.value, condensate_markers: rel_marker.value }) }); manageCD(cid); }
+async function addCD(cid) { await api('api/relations/condensate-disease', { method: 'POST', body: JSON.stringify({ condensate_id: cid, disease_id: rel_did.value, pmid: rel_pmid.value || null, dysregulation_type: rel_dys.value, condensate_markers: rel_marker.value }) }); manageCD(cid); }
 async function delRel(url, cb) { if (confirm('Delete this relation?')) { await api(url, { method: 'DELETE' }); cb(); } }
 
 async function dashboard() {
   current = 'dashboard';
   document.querySelectorAll('.side-btn').forEach(b => b.classList.remove('active'));
   document.getElementById('side-dashboard').classList.add('active');
-  const s = await api('/api/stats/summary');
+  const s = await api('api/stats/summary');
   main.innerHTML = `<div class="card"><h2>Statistics</h2><div class="grid">${Object.entries({ 'Proteins': s.protein_total, 'Kinases': s.kinase_total, 'Condensates': s.condensate_total, 'Diseases': s.disease_total, 'Publications': s.publication_total, 'Chemical Modifiers': s.cmod_total, 'Total Users': s.user_total, 'Standard Users': s.normal_user_total, 'Administrators': s.admin_total, 'Disabled Users': s.disabled_user_total }).map(([k, v]) => `<div class="stat"><span>${k}</span><br><b>${v}</b></div>`).join('')}</div></div><div class="charts"><div class="card chart" id="c1"></div><div class="card chart" id="c2"></div></div>`;
-  const d = await api('/api/stats/charts');
+  const d = await api('api/stats/charts');
   echarts.init(c1).setOption({ title: { text: 'Condensate Count by Type' }, tooltip: {}, series: [{ type: 'pie', data: d.condensate_type }] });
   echarts.init(c2).setOption({ title: { text: 'Top Proteins by Condensate Associations' }, xAxis: { type: 'category', data: d.protein_rank.map(x => x.name), axisLabel: { rotate: 30 } }, yAxis: {}, series: [{ type: 'bar', data: d.protein_rank.map(x => x.value) }] });
 }

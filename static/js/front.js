@@ -27,7 +27,7 @@ function page(title, name, tip) {
 async function loadList(p = 1) {
   state.page = p;
   const kw = document.getElementById('kw')?.value || '';
-  const data = await api(`/api/${current}?page=${state.page}&size=${state.size}&keyword=${encodeURIComponent(kw)}`);
+  const data = await api(`api/${current}?page=${state.page}&size=${state.size}&keyword=${encodeURIComponent(kw)}`);
   state.total = data.total;
   let actions = null;
   if (current === 'proteins') actions = r => `<button class="btn small" onclick="showProteinCond(${r.protein_id})">Condensates</button>`;
@@ -40,7 +40,7 @@ async function loadList(p = 1) {
 }
 
 async function optionHtml(name, placeholder) {
-  const rows = await api(`/api/options/${name}`);
+  const rows = await api(`api/options/${name}`);
   return `<option value="">${placeholder}</option>` + rows.map(o => `<option value="${esc(o.value)}">${esc(o.label)} (${esc(o.value)})</option>`).join('');
 }
 
@@ -67,7 +67,7 @@ async function loadAdvanced(p = 1) {
     cmod_id: document.getElementById('advCmod')?.value || '',
     pmid: document.getElementById('advPmid')?.value || ''
   });
-  const data = await api(`/api/search/advanced?${params.toString()}`);
+  const data = await api(`api/search/advanced?${params.toString()}`);
   state.total = data.total;
   const actions = r => `<button class="btn small" onclick="showProteinCond(${r.protein_id})">Condensates</button>`;
   document.getElementById('list').innerHTML = tableHtml(cols.advanced, data.items, actions) + advancedPagerHtml(state);
@@ -86,32 +86,32 @@ function clearAdvanced() {
 }
 
 async function showProteinCond(id) {
-  const rows = await api(`/api/proteins/${id}/condensates`);
+  const rows = await api(`api/proteins/${id}/condensates`);
   showModal('Condensates associated with this protein', tableHtml(cols.condensates, rows));
 }
 async function showCondProteins(id) {
-  const rows = await api(`/api/condensates/${id}/proteins`);
+  const rows = await api(`api/condensates/${id}/proteins`);
   showModal('Proteins / kinases in this condensate', tableHtml(cols.proteins, rows));
 }
 async function showCondDiseases(id) {
-  const rows = await api(`/api/condensates/${id}/diseases`);
+  const rows = await api(`api/condensates/${id}/diseases`);
   showModal('Disease associations', tableHtml([['disease_name', 'Disease Name'], ['dysregulation_type', 'Dysregulation Type'], ['condensate_markers', 'Condensate Markers'], ['pmid', 'PubMed PMID']], rows));
 }
 async function showDiseaseCond(id) {
-  const rows = await api(`/api/diseases/${id}/condensates`);
+  const rows = await api(`api/diseases/${id}/condensates`);
   showModal('Disease evidence', tableHtml([['condensate_name', 'Condensate'], ['dysregulation_type', 'Dysregulation Type'], ['condensate_markers', 'Condensate Markers'], ['pmid', 'PubMed PMID']], rows));
 }
 async function showCmodCond(id) {
-  const rows = await api(`/api/cmods/${id}/condensates`);
+  const rows = await api(`api/cmods/${id}/condensates`);
   showModal('Condensates affected by this chemical modifier', tableHtml(cols.condensates.concat([['pmid', 'PMID']]), rows));
 }
 async function showSeq(id) {
-  const data = await api(`/api/kinases?keyword=&page=1&size=100`);
+  const data = await api(`api/kinases?keyword=&page=1&size=100`);
   const k = data.items.find(x => x.protein_id == id);
   showModal('Protein Sequence', `<div class="seq">${esc(k?.sequence || 'No sequence found')}</div>`);
 }
 async function showPmid(pmid) {
-  const d = await api(`/api/publications/${encodeURIComponent(pmid)}/evidence`);
+  const d = await api(`api/publications/${encodeURIComponent(pmid)}/evidence`);
   showModal('PubMed Evidence', `<h3>Condensate-Disease Relations</h3>${tableHtml([['condensate_name', 'Condensate'], ['disease_name', 'Disease'], ['dysregulation_type', 'Dysregulation'], ['condensate_markers', 'Markers'], ['pmid', 'PMID']], d.disease_relations)}<h3>Condensate-Chemical Modifier Relations</h3>${tableHtml([['condensate_name', 'Condensate'], ['cmod_name', 'Chemical Modifier'], ['pmid', 'PMID']], d.cmod_relations)}`);
 }
 
@@ -122,7 +122,7 @@ function home() {
   loadStats();
 }
 async function loadStats() {
-  const s = await api('/api/stats/summary');
+  const s = await api('api/stats/summary');
   stats.innerHTML = Object.entries({ 'Proteins': s.protein_total, 'Kinases': s.kinase_total, 'Condensates': s.condensate_total, 'Diseases': s.disease_total }).map(([k, v]) => `<div class="stat"><span>${k}</span><br><b>${v}</b></div>`).join('');
 }
 function complex() {
@@ -131,7 +131,7 @@ function complex() {
 }
 async function charts() {
   document.getElementById('complexBox').innerHTML = '<div class="charts"><div class="card chart" id="c1"></div><div class="card chart" id="c2"></div><div class="card chart" id="c3"></div><div class="card chart" id="c4"></div><div class="card chart" id="c5"></div></div>';
-  const d = await api('/api/stats/charts');
+  const d = await api('api/stats/charts');
   drawPie('c1', 'Condensate Count by Type', d.condensate_type);
   drawBar('c2', 'Disease-Associated Condensate Count', d.disease_rank);
   drawBar('c3', 'Condensate Count by Species', d.species_count);
@@ -191,7 +191,7 @@ async function loadNetwork() {
   const kw = encodeURIComponent(document.getElementById('networkKw')?.value || '');
   const mode = document.getElementById('networkMode')?.value || 'all';
   const limit = document.getElementById('networkLimit')?.value || '80';
-  const data = await api(`/api/network?keyword=${kw}&mode=${mode}&limit=${limit}`);
+  const data = await api(`api/network?keyword=${kw}&mode=${mode}&limit=${limit}`);
   document.getElementById('networkSummary').innerHTML = `Nodes: <b>${data.summary.node_count}</b><br>Edges: <b>${data.summary.edge_count}</b><br>Mode: <b>${esc(data.summary.mode)}</b><br>Relation limit: <b>${esc(data.summary.limit)}</b>`;
 
   if (!data.elements || data.elements.length === 0) {

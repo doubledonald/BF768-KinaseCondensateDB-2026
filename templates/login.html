@@ -1,53 +1,81 @@
-<!doctype html><html lang="en"><head><meta charset="UTF-8"><title>CondensateDB Login</title><link rel="stylesheet" href="/static/css/style.css"></head><body class="auth-body">
-<div class="auth-shell">
-  <section class="auth-left">
-    <h1>CondensateDB</h1>
-    <p>An integrated query and management platform for biomolecular condensates, proteins, kinases, diseases, chemical modifiers, and literature evidence.</p>
-    <p>All standard users can register and use the public portal immediately.</p>
-    <div class="feature-strip">
-      <div class="feature"><strong>Quick Explore</strong><span>Search proteins, kinases, condensates, and disease links in one place.</span></div>
-      <div class="feature"><strong>Relation Intelligence</strong><span>Navigate protein-condensate-disease evidence and chemical modifiers.</span></div>
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <title>CondensateDB Login</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+  </head>
+  <body class="auth-body">
+    <div class="condensate-auth-bg" aria-hidden="true">
+      <span class="condensate-auth-orbit orbit-a"></span>
+      <span class="condensate-auth-orbit orbit-b"></span>
+      <span class="condensate-auth-orbit orbit-c"></span>
+      <span class="condensate-auth-node node-a"></span>
+      <span class="condensate-auth-node node-b"></span>
+      <span class="condensate-auth-node node-c"></span>
     </div>
-      <a class="home-link" href="/index">Back to Public Home</a>
-  </section>
-  <section class="auth-card">
-    <h2 class="auth-title">Sign In</h2>
-    <div class="form-row"><label>Username</label><input id="username" class="input" placeholder="Enter username" autocomplete="username"></div>
-    <div class="form-row"><label>Password</label><input id="password" type="password" class="input" placeholder="Enter password" autocomplete="current-password"></div>
-    <div class="btn-group">
-      <button class="btn primary" id="userSignInBtn" onclick="login('user')">Sign In</button>
-      <button class="btn warn" id="adminSignInBtn" onclick="login('admin')">Administrator Sign In</button>
+
+    <div class="auth-left">
+      <h1>CondensateDB</h1>
+      <p>
+        An integrated query and management platform for biomolecular condensates, proteins,
+        kinases, diseases, chemical modifiers, and literature evidence.
+      </p>
+      <p class="course-credit">This project was developed at Boston University as part of BF768, Spring 2026, G. Benson instructor.</p>
+    </div>
+
+    <div class="auth-card">
+      <h2>Sign In</h2>
+      <div class="form-row">
+        <label>Username</label>
+        <input id="username" class="input">
+      </div>
+      <div class="form-row">
+        <label>Password</label>
+        <input id="password" type="password" class="input">
+      </div>
+      <label>Role</label>
+      <div class="radio">
+        <label>
+          <input type="radio" name="role" value="User" checked> User
+        </label>
+        <label>
+          <input type="radio" name="role" value="Administrator"> Administrator
+        </label>
+      </div>
+      <button class="btn primary" onclick="login()">Sign In</button>
       <button class="btn" onclick="location.href='/register'">Register</button>
+      <button class="btn" onclick="location.href='/static/help.html?from=home'">Help</button>
     </div>
-  </section>
-</div>
-<script>
-function setBusy(btn, busy) {
-  btn.classList.toggle('loading', !!busy);
-  btn.disabled = !!busy;
-}
-async function login(role='user') {
-  const username = document.getElementById('username').value.trim();
-  const password = document.getElementById('password').value.trim();
-  if (!username || !password) { alert('Username and password are required'); return; }
-  const btn = role === 'admin' ? document.getElementById('adminSignInBtn') : document.getElementById('userSignInBtn');
-  setBusy(btn, true);
-  try {
-    const payload = { username, password, role };
-    if (role === 'admin') payload.role = 'admin';
-    const r = await fetch('/api/auth/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    });
-    const j = await r.json();
-    if (j.code !== 200) { alert(j.msg); return; }
-    localStorage.setItem('token', j.data.token);
-    localStorage.setItem('user', JSON.stringify(j.data.user));
-    location.href = role === 'admin' ? '/admin' : '/index';
-  } finally {
-    setBusy(btn, false);
-  }
-}
-</script>
-</body></html>
+
+    <script>
+      async function login(){
+        const username=document.getElementById('username').value.trim(),
+          password=document.getElementById('password').value.trim(),
+          roleLabel=document.querySelector("input[name=role]:checked")?.value,
+          role=roleLabel==="Administrator"?"admin":"user";
+
+        if(!username||!password||!role){
+          alert('Username, password and role are required');
+          return
+        }
+
+        const r=await fetch('/api/auth/login',{
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({username,password,role})
+        });
+
+        const j=await r.json();
+        if(j.code!==200){
+          alert(j.msg);
+          return
+        }
+
+        localStorage.setItem('token',j.data.token);
+        localStorage.setItem('user',JSON.stringify(j.data.user));
+        location.href=role==='admin'?'/admin':'/index'
+      }
+    </script>
+  </body>
+</html>

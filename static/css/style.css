@@ -29,6 +29,98 @@ body {
   font-family: Inter, "Microsoft YaHei", Arial, sans-serif;
   background: var(--bg);
   color: var(--text);
+  position: relative;
+  overflow-x: hidden;
+}
+
+.condensate-bg {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.62;
+  filter: blur(0.2px);
+  background:
+    radial-gradient(circle at 12% 20%, rgba(14, 165, 233, 0.18) 0, rgba(14, 165, 233, 0.04) 24%, transparent 52%),
+    radial-gradient(circle at 82% 16%, rgba(37, 99, 235, 0.16) 0, rgba(37, 99, 235, 0.06) 26%, transparent 54%),
+    radial-gradient(circle at 46% 72%, rgba(96, 165, 250, 0.16) 0, rgba(96, 165, 250, 0.04) 24%, transparent 56%);
+}
+
+.condensate-orbit,
+.condensate-node {
+  position: absolute;
+  border-radius: 50%;
+  opacity: 0.48;
+}
+
+.condensate-orbit {
+  border: 2px solid rgba(14, 165, 233, 0.35);
+  box-shadow: 0 0 36px rgba(14, 165, 233, 0.22);
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.14), transparent 64%);
+}
+
+.orbit-a {
+  width: 280px;
+  height: 280px;
+  top: -60px;
+  left: -80px;
+}
+
+.orbit-b {
+  width: 360px;
+  height: 360px;
+  top: 18vh;
+  right: -140px;
+  transform: rotate(24deg);
+}
+
+.orbit-c {
+  width: 210px;
+  height: 210px;
+  bottom: 15vh;
+  left: 26vw;
+  transform: rotate(-20deg);
+}
+
+.condensate-node {
+  width: 12px;
+  height: 12px;
+  background: var(--primary);
+  box-shadow:
+    0 0 18px rgba(37, 99, 235, 0.42),
+    0 0 0 7px rgba(37, 99, 235, 0.12);
+}
+
+.node-a { left: 29%; top: 26%; }
+.node-b { left: 57%; top: 42%; }
+.node-c { left: 67%; top: 64%; }
+
+.condensate-orbit::before,
+.condensate-orbit::after {
+  content: '';
+  position: absolute;
+  width: 46px;
+  height: 2px;
+  background: linear-gradient(90deg, rgba(30, 64, 175, 0), rgba(30, 64, 175, 0.65), rgba(30, 64, 175, 0));
+  top: 50%;
+  left: 12%;
+}
+
+.condensate-orbit::before {
+  transform: translateY(-50%) rotate(22deg);
+}
+
+.condensate-orbit::after {
+  transform: translateY(-50%) rotate(-20deg);
+  left: auto;
+  right: 12%;
+}
+
+.topbar,
+.container,
+.modal-mask {
+  position: relative;
+  z-index: 1;
 }
 
 a { color: var(--primary); text-decoration: none; }

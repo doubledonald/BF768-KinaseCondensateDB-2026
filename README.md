@@ -1,58 +1,59 @@
 # CondensateDB v2 (BF768-KinaseCondensateDB-2026)
 
 A Flask + MySQL web application for biomolecular condensate data exploration and management, including:
-- public user portal (`/index`)
-- public registration/login (`/register`, `/login`)
-- role-gated admin panel (`/admin`)
+
+- Public user portal (`/index`)
+- Public registration/login (`/register`, `/login`)
+- Role-gated admin panel (`/admin`)
 
 This repository supports public access with role separation and JWT-based API security.
 
 ---
 
-## 1. 项目概览
+## 1. Project Overview
 
-该数据库面向生物分子凝聚体（Condensate）研究，提供下列核心能力：
+The database is designed for biomolecular condensate research and provides:
 
-- 蛋白质 / 激酶检索与分页查询
-- 脱落病变（疾病）与化学修饰（C-mod）关联查询
-- 文献证据（PMID）追踪与展示
-- 关系图谱（蛋白-凝聚体-疾病-C-mod）可视化
-- 管理后台（仅管理员）支持主数据与关系维护、用户禁用/启用、日志查看
+- Protein / kinase search with paginated lists
+- Disease and chemical modifier (C-mod) association queries
+- Literature evidence (PMID) tracing and display
+- Relation graph visualization for protein-condensate-disease-C-mod links
+- Admin dashboard for master-data maintenance, relation maintenance, user activation/deactivation, and operation logs
 
-前端页面入口：
-- 登录页：`/login`
-- 注册页：`/register`
-- 用户页：`/index`
-- 管理页：`/admin`
-
----
-
-## 2. 目录结构（快速识别）
-
-- `app.py`：应用启动与初始化（Flask app 工厂 + 蓝图注册 + 默认管理员初始化）
-- `config.py`：运行配置（含环境变量解析）
-- `routes.py`：蓝图入口组装
-- `controller/`：页面路由与 API 路由（auth + data）
-- `service/utils.py`：JWT、分页、导出、通用响应工具
-- `models/`：SQLAlchemy 模型（`user_info`、`protein`、`condensate` 等）
-- `templates/`：页面模板（`login.html` / `register.html` / `index.html` / `admin.html`）
-- `static/js/`：前端交互逻辑（公共 API 调用、列表交互、统计、关系图）
-- `sql/condensatedb.sql`：数据库初始化 SQL（含基础表结构）
-- `.env.example`：环境变量示例
-- `requirements.txt`：Python 依赖
-- `render.yaml`：Render 一键部署配置
+Frontend page entry points:
+- Login page: `/login`
+- Registration page: `/register`
+- User dashboard: `/index`
+- Admin dashboard: `/admin`
 
 ---
 
-## 3. 快速启动（本地）
+## 2. Quick Project Layout
 
-### 3.1 环境依赖
+- `app.py`: application startup and initialization (Flask app factory + blueprint registration + bootstrap admin account)
+- `config.py`: runtime configuration loaded from environment variables
+- `routes.py`: blueprint registration
+- `controller/`: page routes and API routes (`auth`, `data`)
+- `service/utils.py`: JWT, pagination, export, common response helpers
+- `models/`: SQLAlchemy models (`user_info`, `protein`, `condensate`, etc.)
+- `templates/`: page templates (`login.html` / `register.html` / `index.html` / `admin.html`)
+- `static/js/`: frontend interaction logic (API wrapper, list views, stats, graph)
+- `sql/condensatedb.sql`: database initialization SQL (core schema)
+- `.env.example`: environment variable sample file
+- `requirements.txt`: Python dependencies
+- `render.yaml`: Render deployment descriptor
 
-- Python 3.9+（推荐 3.11）
+---
+
+## 3. Local Quick Start
+
+### 3.1 Runtime Requirements
+
+- Python 3.9+ (recommended 3.11)
 - MariaDB / MySQL
-- 可选：`redis`、CDN 访问（用于 `echarts`、`cytoscape` 资源加载）
+- Optional: `redis`, network access for CDN resources (`echarts`, `cytoscape`)
 
-### 3.2 安装与运行
+### 3.2 Install Dependencies
 
 ```bash
 cd /Users/FruityClaw/Desktop/BF768-KinaseCondensateDB-2026
@@ -61,91 +62,94 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-### 3.3 数据库准备
+### 3.3 Database Preparation
 
-建议先导入数据库结构（生产/本地仅首次执行）：
+Import the schema before first run (production/local initialization only):
 
 ```bash
 mysql -u USER -pPASSWORD -h HOST Team3 < sql/condensatedb.sql
 ```
 
-说明：
-- 当前 SQL 文件在 `sql/condensatedb.sql`，创建了核心表结构与部分初始记录。
-- SQL 文件中可含明文初始密码示例，部署前请立即更新管理员凭据。
+Notes:
+- `sql/condensatedb.sql` creates the core tables and seed records.
+- This file may include sample plaintext credentials; update administrator credentials immediately after deployment.
 
-### 3.4 配置环境变量
+### 3.4 Configure Environment Variables
 
 ```bash
 cp .env.example .env
 ```
 
-至少配置：
+At minimum, set:
 
 - `DATABASE_URL`
 - `SECRET_KEY`
 - `JWT_SECRET`
-- `ADMIN_BOOTSTRAP_PASSWORD`（建议强随机）
-- `ALLOW_PUBLIC_REGISTRATION`（默认 true，允许公开注册）
+- `ADMIN_BOOTSTRAP_PASSWORD` (strong random value)
+- `ALLOW_PUBLIC_REGISTRATION` (default true, enables public signup)
 
-### 3.5 启动
+### 3.5 Start the Service
 
-开发启动：
+Development mode:
 
 ```bash
 python app.py
 ```
 
-生产启动（可选）：
+Production option:
 
 ```bash
 gunicorn -w 4 -b 0.0.0.0:5001 app:app
 ```
 
-访问：
-- 登录：`http://127.0.0.1:5001/login`
-- 注册：`http://127.0.0.1:5001/register`
-- 首页：`http://127.0.0.1:5001/index`
-- 管理：`http://127.0.0.1:5001/admin`
+URLs (example if running on local port 5001):
+- Login: `http://127.0.0.1:5001/login`
+- Register: `http://127.0.0.1:5001/register`
+- Home: `http://127.0.0.1:5001/index`
+- Admin: `http://127.0.0.1:5001/admin`
 
 ---
 
-## 4. 配置项说明（核心）
+## 4. Key Configuration Reference
 
-| 环境变量 | 说明 | 建议值 |
+| Environment Variable | Description | Suggested Value |
 |---|---|---|
-| `FLASK_ENV` | Flask 运行环境 | `production` |
-| `SECRET_KEY` | Flask 安全密钥 | 强随机字符串 |
-| `JWT_SECRET` | JWT 签名密钥 | 强随机字符串 |
-| `JWT_EXPIRE_HOURS` | Token 有效时长（小时） | `8` |
-| `DATABASE_URL` | 数据库连接 | `mysql+pymysql://USER:PASSWORD@HOST:3306/Team3?charset=utf8mb4` |
-| `SERVER_HOST` | 监听 Host | `0.0.0.0` |
-| `SERVER_PORT` | 监听端口 | `5001` |
-| `DEBUG` | 调试开关 | 生产建议 `false` |
-| `ALLOW_PUBLIC_REGISTRATION` | 是否允许公开注册 | `true` / `false` |
-| `CORS_ORIGINS` | CORS 白名单 | `*` 或具体域名 |
-| `ADMIN_BOOTSTRAP_ENABLED` | 启动时自动创建管理员 | `true` |
-| `ADMIN_BOOTSTRAP_USERNAME` | 管理员用户名 | `admin` |
-| `ADMIN_BOOTSTRAP_PASSWORD` | 管理员初始密码 | 强密码 |
-| `ADMIN_BOOTSTRAP_EMAIL` | 管理员邮箱 | 有效邮箱 |
+| `FLASK_ENV` | Flask runtime environment | `production` |
+| `SECRET_KEY` | Flask secret key | Strong random string |
+| `JWT_SECRET` | JWT signing secret | Strong random string |
+| `JWT_EXPIRE_HOURS` | Token TTL in hours | `8` |
+| `DATABASE_URL` | MySQL connection string | `mysql+pymysql://USER:PASSWORD@HOST:3306/Team3?charset=utf8mb4` |
+| `SERVER_HOST` | Bind host | `0.0.0.0` |
+| `SERVER_PORT` | Bind port | `5001` |
+| `DEBUG` | Debug switch | `false` in production |
+| `ALLOW_PUBLIC_REGISTRATION` | Allow public user signup | `true` / `false` |
+| `CORS_ORIGINS` | CORS allow list | `*` or explicit origins |
+| `ADMIN_BOOTSTRAP_ENABLED` | Create bootstrap admin on startup | `true` |
+| `ADMIN_BOOTSTRAP_USERNAME` | Admin username | `admin` |
+| `ADMIN_BOOTSTRAP_PASSWORD` | Initial admin password | Strong random password |
+| `ADMIN_BOOTSTRAP_EMAIL` | Admin email | A valid email |
 
 ---
 
-## 5. 访问与权限模型
+## 5. Access and Permission Model
 
-- 未登录请求 `/api/*`：
-  - 返回 `code=401`（登录失效/未登录），前端会触发跳转到 `/login`
-- 普通用户：
-  - 登录后访问 `/index`，可进行全部查询与导出
-  - 可在 `/register` 自行注册（默认开启）
-- 管理员：
-  - 需管理员账号，访问 `/admin`
-  - 可增删改查主数据和关系、切换用户状态
+- Unauthenticated calls to `/api/*`:
+  - return `code=401` (missing/expired login), and frontend redirects to `/login`.
+- Regular users:
+  - can access `/index` after login
+  - can perform search/list/export operations
+  - can self-register via `/register` when `ALLOW_PUBLIC_REGISTRATION=true`
+- Administrators:
+  - require admin role account
+  - can access `/admin`
+  - can create/update/delete master data and relationship entries
+  - can enable/disable user accounts
 
 ---
 
-## 6. 主要 API 文档（v2）
+## 6. API Reference (v2)
 
-说明：所有 API 均采用 JSON，响应格式统一如下：
+All APIs return JSON in this shape:
 
 ```json
 {
@@ -155,41 +159,41 @@ gunicorn -w 4 -b 0.0.0.0:5001 app:app
 }
 ```
 
-### 6.1 鉴权接口（`/api/auth`）
+### 6.1 Auth APIs (`/api/auth`)
 
 - `POST /api/auth/login`
-  - Body：`{ "username": "", "password": "", "role": "user|admin" }`
-  - 成功返回：`token`, `user`
+  - Body: `{ "username": "", "password": "", "role": "user|admin" }`
+  - Success returns `token` and `user`
 - `POST /api/auth/register`
-  - Body：`{ "username": "", "password": "", "email": "", "gender": "", "phone": "" }`
-  - 默认仅创建 `user`，并要求密码长度 >= 8
+  - Body: `{ "username": "", "password": "", "email": "", "gender": "", "phone": "" }`
+  - Creates standard user only; password must be at least 8 characters
 
-### 6.2 通用查询与管理（`/api`）
+### 6.2 Generic Query and Management APIs (`/api`)
 
-支持分页参数：`page`、`size`（服务端强制最大 `size=100`）。
+Pagination supports `page` and `size` (server-enforced maximum `size=100`).
 
-资源名及字段：
-- `users`（普通用户视图）
+Supported resource names:
+- `users` (normal user view)
 - `proteins`
 - `kinases`
 - `condensates`
 - `diseases`
 - `cmods`
 - `publications`
-- `admin-logs`（仅管理员）
+- `admin-logs` (admin only)
 
-公共接口：
+Common endpoints:
 - `GET /api/<name>?page=&size=&keyword=`
-- `GET /api/options/<name>` 下拉选项
-- `GET /api/<name>/export?keyword=&type=excel|csv` 下载导出文件
+- `GET /api/options/<name>` for dropdown option lists
+- `GET /api/<name>/export?keyword=&type=excel|csv` for export
 
-管理员接口：
-- `POST /api/<name>` 创建（含自动写 `admin_log`）
-- `PUT /api/<name>/<id>` 更新
-- `DELETE /api/<name>/<id>` 删除
-- `PUT /api/users/<id>/toggle` 启用/禁用用户
+Admin-only endpoints:
+- `POST /api/<name>` (create, and writes `admin_log`)
+- `PUT /api/<name>/<id>` (update)
+- `DELETE /api/<name>/<id>` (delete)
+- `PUT /api/users/<id>/toggle` (enable/disable user)
 
-### 6.3 高级检索与关系查询
+### 6.3 Advanced Search and Relation Queries
 
 - `GET /api/search/advanced?protein_name=&condensate_id=&disease_id=&cmod_id=&pmid=`
 - `GET /api/proteins/<pid>/condensates`
@@ -200,14 +204,14 @@ gunicorn -w 4 -b 0.0.0.0:5001 app:app
 - `GET /api/cmods/<mid>/condensates`
 - `GET /api/publications/<pmid>/evidence`
 
-### 6.4 统计与图谱
+### 6.4 Statistics and Graph APIs
 
 - `GET /api/stats/summary`
 - `GET /api/stats/charts`
 - `GET /api/network?keyword=&mode=&limit=`
   - `mode`: `all | protein_condensate | condensate_disease | condensate_cmod`
 
-### 6.5 关系编辑（管理员）
+### 6.5 Relation Editing (Admin)
 
 - `POST /api/relations/protein-condensate`
 - `DELETE /api/relations/protein-condensate/<rid>`
@@ -218,75 +222,76 @@ gunicorn -w 4 -b 0.0.0.0:5001 app:app
 
 ---
 
-## 7. 页面与前端行为说明
+## 7. Frontend Behavior
 
-- 登录/注册页使用 `localStorage` 持久化 token。
-- 所有受保护页面在前端未检测到 token 时会跳转 `/login`。
-- 列表支持：
-  - 关键词检索、分页
-  - 无数据与错误状态展示
-  - 行内展开/复制
-- `/admin` 支持：
-  - 用户管理（含禁用/启用）
-  - 数据增删改查
-  - 关系维护（增删）
-  - 统计图（依赖 `echarts`）
-- 网络图使用 `cytoscape`，后端返回受限条数并提供 `mode/keyword/limit` 参数控制。
+- Login token is persisted in `localStorage`.
+- Protected pages redirect to `/login` when token is missing in local frontend check.
+- List views support:
+  - keyword filtering
+  - pagination
+  - empty state and error state messages
+  - row expand and row copy actions
+- `/admin` supports:
+  - user management (including disable/enable)
+  - CRUD for master data
+  - relation maintenance (add/remove)
+  - dashboard charts (dependency: `echarts`)
+- Network graph uses `cytoscape` with backend result caps and `mode/keyword/limit` controls.
 
 ---
 
-## 8. 部署（Render）
+## 8. Render Deployment
 
-仓库已包含 `render.yaml`，支持快速托管上线。
+This repository includes `render.yaml` for quick deployment.
 
-推荐步骤：
-1. 连接 Git 仓库，分支选择 `main`
-2. 配置环境变量（见 4）
-3. 监听端口按配置发布
-4. 部署后访问:
+Recommended flow:
+1. Connect repository and use branch `main`
+2. Add environment variables from Section 4
+3. Deploy with configured host/port
+4. Access after deployment:
    - `/login`
    - `/register`
    - `/index`
-   - `/admin`（管理员）
+   - `/admin` (admin only)
 
 ---
 
-## 9. 常见故障排查
+## 9. Common Troubleshooting
 
-- 无法登录/频繁 401：
-  - 检查 `JWT_SECRET` 是否一致、token 是否过期（`JWT_EXPIRE_HOURS`）
-- 登录页可进但部分接口 403：
-  - 使用了管理员权限接口，确认 role 为 `admin`
-- `/api/network` 空白/无图：
-  - 检查 `cytoscape` CDN 是否可达
-  - 使用非空关键词（如 `BRD4`, `TP53`, `EGFR`）
-- 注册成功但无法登录：
-  - 检查数据库中 `user_info` 约束（`username` 唯一 / `email` 唯一）
-
----
-
-## 10. 安全建议
-
-- 部署时必须设置强随机 `SECRET_KEY` 与 `JWT_SECRET`
-- 勿提交明文生产密码
-- 建议通过反向代理和 HTTPS 提供服务
-- 管理员账号请通过环境变量初始化并定期轮换
-- 默认示例 SQL 的测试口令应在数据库初始化后立即改密
+- Frequent 401 or cannot login:
+  - Verify `JWT_SECRET` consistency and token expiration (`JWT_EXPIRE_HOURS`)
+- Login page works but some endpoints return 403:
+  - Ensure admin role is used for admin APIs
+- Network graph page is empty:
+  - Ensure `cytoscape` CDN is reachable
+  - Try non-empty keywords such as `BRD4`, `TP53`, `EGFR`
+- Registration success but login failure:
+  - Check unique constraints in `user_info` (`username`, `email`)
 
 ---
 
-## 11. 现有文档关系
+## 10. Security Best Practices
 
-- 主入口说明请看本文件 `README.md`
-- 公开部署补充与 Render 演示建议见 `README_Team3_Access_Guide.md`
-- 本次新增不删除任何现有页面文件或使用说明内容
+- Set strong random values for `SECRET_KEY` and `JWT_SECRET` in production
+- Do not store or commit production plaintext passwords
+- Recommend reverse proxy + HTTPS for public traffic
+- Initialize admin account via environment variables and rotate periodically
+- Change any sample credentials from SQL seed data immediately after deployment
 
 ---
 
-## 12. 执行清单（实现级）
+## 11. Documentation Relationship
 
-1. 新增 `README.md`，将以上内容按当前仓库实际端口/域名替换示例值。
-2. 保留 `README_Team3_Access_Guide.md`，不做删除或内容替代。
-3. 在 README 首行添加仓库名与一句话定位，确保新读者 2 分钟内可启动。
-4. 可选：补充一条服务端口示例为 `5001` 与数据库名/实例自定义说明，避免误导。
-5. 提交：`git add README.md && git commit -m "add detailed project README for setup and API usage"`（不改变其他文件）
+- This file is the main project guide.
+- Additional public-access and Render walkthrough details are documented in `README_Team3_Access_Guide.md`.
+- This change only adds documentation and does not remove any existing page/help content.
+
+---
+
+## 12. Implementation Checklist
+
+1. Add this English `README.md` and align sample values (host/port/database) to your real deployment context.
+2. Keep `README_Team3_Access_Guide.md` unchanged.
+3. Keep top-level summary + quick-start path so new users can run the system quickly.
+4. Optionally add a brief deployment example if your environment differs from the default values.
+5. Commit only `README.md` without changing other tracked files.

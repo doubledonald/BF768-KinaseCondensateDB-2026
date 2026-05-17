@@ -2,6 +2,7 @@ import csv, io, jwt
 from datetime import datetime, timedelta
 from functools import wraps
 from flask import request, jsonify, current_app, Response
+from werkzeug.security import generate_password_hash, check_password_hash
 from openpyxl import Workbook
 from exts import db
 
@@ -34,6 +35,30 @@ def make_token(user):
         'exp': datetime.utcnow() + timedelta(hours=current_app.config['JWT_EXPIRE_HOURS'])
     }
     return jwt.encode(payload, current_app.config['JWT_SECRET'], algorithm='HS256')
+
+
+def hash_password(password):
+    return generate_password_hash(password)
+
+
+def is_hashed_password(value):
+    return isinstance(value, str) and (
+        value.startswith('pbkdf2:') or
+        value.startswith('scrypt:') or
+        value.startswith('bcrypt:') or
+        value.startswith('argon2:')
+    )
+
+
+def verify_password(password, stored):
+    if not password or not stored:
+        return False
+    if not is_hashed_password(stored):
+        return stored == password
+    try:
+        return check_password_hash(stored, password)
+    except ValueError:
+        return False
 
 
 def current_user_payload():

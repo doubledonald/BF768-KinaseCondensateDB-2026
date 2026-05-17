@@ -1,293 +1,96 @@
-# Team3 CondensateDB Access Guide / Team3 CondensateDB 项目访问指南
+# Team3 CondensateDB Public Access Guide
 
-## English Version
+## CondensateDB v2.0 (Public Access Edition)
 
-### 1. Project status
+This repository now supports **public read/write registration** and role-gated usage of
+the CondensateDB platform.
 
-The Team3 CondensateDB project has already been deployed on the bioed server.  
-The web application is running on the server's internal address:
+## 1. Quick start (Public access mode)
 
-```text
-127.0.0.1:5001
+### 1.1 Install dependencies
+
+```bash
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
 ```
 
-Because this address is only accessible inside the server, each teammate needs to use **MobaXterm SSH Tunnel** to open the project in their own browser.
+### 1.2 Configure environment
 
----
+Copy `.env.example` (new), edit with your database and secrets:
 
-### 2. Open MobaXterm tunnel settings
-
-Open **MobaXterm**, then go to:
-
-```text
-Tunneling → New SSH tunnel
+```bash
+cp .env.example .env
+# Fill real values in .env, then install and start
 ```
 
-Choose:
+Or create your own `.env`/container secrets in your deployment platform.
+The app loads `.env` automatically when present.
 
-```text
-Local port forwarding
+Key settings (public access mode defaults to open registration):
+- `DATABASE_URL`: MySQL connection string for MariaDB/MySQL.
+- `SECRET_KEY`: Flask session/JWT signing base secret.
+- `JWT_SECRET`: JWT signing secret (set strong random value).
+- `ALLOW_PUBLIC_REGISTRATION`: set to `true` for open user self-registration.
+- `DEBUG`: keep `false` in public/public-facing deployment.
+- `SERVER_HOST` and `SERVER_PORT`: public host and port.
+- `CORS_ORIGINS`: allow frontend/domain origin list.
+
+Default behavior is `ALLOW_PUBLIC_REGISTRATION=true`. Leave this on for a truly public instance.
+
+### 1.3 Start app
+
+```bash
+python app.py
 ```
 
----
+Then visit:
 
-### 3. Tunnel configuration
+- User login: `http://<your-host>:<port>/login`
+- Public registration: `http://<your-host>:<port>/register`
+- User dashboard: `http://<your-host>:<port>/index`
 
-Use the following settings:
+## 2. What changed for public deployment
 
-```text
-Forwarded port: 5001
-Remote server: 127.0.0.1
-Remote port: 5001
+1. **Public registration is enabled** with role-gated account creation.
+2. **Authentication hardened**:
+   - Passwords are now stored with Werkzeug password hashes.
+   - Legacy plaintext credentials are only accepted for backward compatibility and
+     rehashed on first successful login.
+3. **Public/private separation**:
+   - Visitors can register as standard users from `/register`.
+   - Admin functions stay under `/admin` and require admin JWT.
+4. **Configurable runtime**:
+   - Host, port, CORS, token lifetime, and secrets come from environment vars.
+   - Optional admin bootstrap can initialize one admin account at startup.
 
-SSH server: bioed-new.bu.edu
-SSH login: your bioed username
-SSH port: 22
-```
+## 2.1 Public entry points
 
-For example, if your bioed username is `abc123`, then use:
+- Registration: `/register`
+- Login: `/login`
+- Public dashboard: `/index`
+- Admin panel: `/admin` (admin account required)
 
-```text
-SSH login: abc123
-```
+## 3. Admin account strategy
 
-After filling in the fields, click **Save**, then start the tunnel.
+Admin users are not meant for public registration. For deployment:
 
----
+- Set `ADMIN_BOOTSTRAP_ENABLED=true`.
+- Set a strong `ADMIN_BOOTSTRAP_PASSWORD`.
+- Set `ADMIN_BOOTSTRAP_USERNAME` and optional `ADMIN_BOOTSTRAP_EMAIL`.
 
-### 4. Open the project in browser
+On startup, the system creates that admin account if missing. If disabled,
+please pre-create admins in your database migration/import flow.
 
-After the tunnel is running, open this URL in your local browser:
+## 4. Notes
 
-```text
-http://127.0.0.1:5001/login
-```
+- Please do not keep default secrets in production.
+- Keep `admin` credentials in secure secrets manager, not in this document.
+- For HTTPS/production hosting, serve behind a reverse proxy and set `SERVER_HOST=0.0.0.0`.
+- After deployment, you can directly share `https://<your-domain>/register` so anyone can create a standard user account.
 
-This local address will be forwarded by MobaXterm to the project running on the bioed server.
+## 中文说明（简版）
 
----
-
-### 5. Login accounts
-
-User account:
-
-```text
-Username: xiaoming
-Password: 123456
-```
-
-Another user account:
-
-```text
-Username: xiaozhang
-Password: 123456
-```
-
-Admin account:
-
-```text
-Username: admin
-Password: 123456
-```
-
----
-
-### 6. If local port 5001 is already in use
-
-If your computer already uses local port `5001`, change only the **Forwarded port** to `5002`:
-
-```text
-Forwarded port: 5002
-Remote server: 127.0.0.1
-Remote port: 5001
-
-SSH server: bioed-new.bu.edu
-SSH login: your bioed username
-SSH port: 22
-```
-
-Then open this URL in your browser:
-
-```text
-http://127.0.0.1:5002/login
-```
-
-This means:
-
-```text
-Your computer 127.0.0.1:5002
-        → MobaXterm SSH tunnel
-Bioed server 127.0.0.1:5001
-```
-
-You are still viewing the same Team3 project.
-
----
-
-### 7. Notes
-
-If you only want to view or test the project, do **not** restart the server application.  
-Only start the MobaXterm tunnel and open the browser URL.
-
-If the page cannot be opened, check:
-
-```text
-1. The MobaXterm tunnel is running.
-2. SSH server is bioed-new.bu.edu.
-3. Remote server is 127.0.0.1.
-4. Remote port is 5001.
-5. Browser URL is http://127.0.0.1:5001/login.
-```
-
-If you use local port `5002`, open:
-
-```text
-http://127.0.0.1:5002/login
-```
-
----
-
-## 中文版本
-
-### 1. 项目状态
-
-Team3 CondensateDB 项目已经部署在 bioed 服务器上。  
-项目目前运行在服务器内部地址：
-
-```text
-127.0.0.1:5001
-```
-
-因为这个地址只能在服务器内部访问，所以每位组员需要使用 **MobaXterm SSH Tunnel**，把服务器端口转发到自己电脑浏览器里访问。
-
----
-
-### 2. 打开 MobaXterm Tunnel 设置
-
-打开 **MobaXterm**，进入：
-
-```text
-Tunneling → New SSH tunnel
-```
-
-选择：
-
-```text
-Local port forwarding
-```
-
----
-
-### 3. Tunnel 配置方式
-
-按照下面填写：
-
-```text
-Forwarded port: 5001
-Remote server: 127.0.0.1
-Remote port: 5001
-
-SSH server: bioed-new.bu.edu
-SSH login: 你的 bioed 用户名
-SSH port: 22
-```
-
-例如，如果你的 bioed 用户名是 `abc123`，那么填写：
-
-```text
-SSH login: abc123
-```
-
-填写完成后，点击 **Save**，然后启动这个 tunnel。
-
----
-
-### 4. 在浏览器打开项目
-
-Tunnel 启动成功后，在自己电脑浏览器里打开：
-
-```text
-http://127.0.0.1:5001/login
-```
-
-这里的 `127.0.0.1:5001` 是你自己电脑的本地地址，但会通过 MobaXterm tunnel 转发到 bioed 服务器上的项目。
-
----
-
-### 5. 登录账号
-
-普通用户账号：
-
-```text
-Username: xiaoming
-Password: 123456
-```
-
-另一个普通用户账号：
-
-```text
-Username: xiaozhang
-Password: 123456
-```
-
-管理员账号：
-
-```text
-Username: admin
-Password: 123456
-```
-
----
-
-### 6. 如果本地 5001 端口被占用
-
-如果你的电脑本地 `5001` 端口已经被占用，只需要把 **Forwarded port** 改成 `5002`：
-
-```text
-Forwarded port: 5002
-Remote server: 127.0.0.1
-Remote port: 5001
-
-SSH server: bioed-new.bu.edu
-SSH login: 你的 bioed 用户名
-SSH port: 22
-```
-
-然后浏览器打开：
-
-```text
-http://127.0.0.1:5002/login
-```
-
-这个配置的意思是：
-
-```text
-你的电脑 127.0.0.1:5002
-        → MobaXterm SSH tunnel
-bioed 服务器 127.0.0.1:5001
-```
-
-访问的仍然是同一个 Team3 项目。
-
----
-
-### 7. 注意事项
-
-如果只是查看或测试项目，请不要在服务器上重新启动项目。  
-只需要启动 MobaXterm tunnel，然后用浏览器访问即可。
-
-如果网页打不开，请检查：
-
-```text
-1. MobaXterm tunnel 是否已经启动。
-2. SSH server 是否是 bioed-new.bu.edu。
-3. Remote server 是否是 127.0.0.1。
-4. Remote port 是否是 5001。
-5. 浏览器地址是否是 http://127.0.0.1:5001/login。
-```
-
-如果你使用本地端口 `5002`，浏览器应打开：
-
-```text
-http://127.0.0.1:5002/login
-```
+当前版本已支持公开访问与公开注册，页面入口不再依赖 SSH tunnel。  
+普通用户通过 `/register` 创建账号，管理员账号通过环境变量初始化并仅用于后台管理。  
+启动后访问 `/login` 即可进入系统。

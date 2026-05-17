@@ -4,7 +4,7 @@ from sqlalchemy import func, or_, exists
 from sqlalchemy.exc import IntegrityError
 from exts import db
 from models import *
-from service.utils import ok, fail, jwt_required, paginate_query, model_to_dict, export_rows, apply_like
+from service.utils import ok, fail, jwt_required, paginate_query, model_to_dict, export_rows, apply_like, hash_password
 
 bp = Blueprint('data', __name__, url_prefix='/api')
 
@@ -381,6 +381,10 @@ def create_data(name):
         data['role'] = ROLE_USER
         data['status'] = 1
         data['create_time'] = datetime.now()
+        if data.get('password'):
+            data['password'] = hash_password(str(data['password']).strip())
+        else:
+            return fail('Password is required for user creation')
     if name == 'publications' and not data.get('pmid'):
         return fail('PMID is required')
     if name == 'kinases' and not data.get('protein_id'):
@@ -409,6 +413,8 @@ def update_data(name, id):
     if not obj: return fail('Record not found', 404)
     for k, v in clean_data(request.get_json() or {}).items():
         if hasattr(obj, k) and k != pk:
+            if name == 'users' and k == 'password':
+                v = hash_password(str(v).strip())
             setattr(obj, k, v)
     write_admin_log('UPDATE', model.__tablename__, id)
     db.session.commit()

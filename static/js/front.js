@@ -118,8 +118,43 @@ async function showPmid(pmid) {
 function home() {
   current = 'home';
   setNav('home');
-  document.getElementById('app').innerHTML = `<div class="hero"><h1>CondensateDB Query Portal</h1><p>An integrated platform for biomolecular condensates, proteins, kinases, diseases, chemical modifiers, and PubMed evidence.</p></div><div class="grid" id="stats"></div><div class="card"><h2>Primary Use Cases</h2><div class="quick-list"><button class="btn primary quick" onclick="advancedSearch()">Advanced Search: protein name + condensate / disease / chemical modification / publication filters</button><button class="btn primary quick" onclick="page('Protein Information','proteins','Which biomolecular condensates is a human kinase associated with? What are the condensate types and confidence scores?')">Human kinase → associated condensates, types and confidence scores</button><button class="btn primary quick" onclick="page('Condensate Information','condensates','Which human kinases are contained in a specific condensate? What are their UniProt accessions, gene names, and sequence lengths?')">Condensate → contained human kinases and sequence metadata</button><button class="btn primary quick" onclick="page('Condensate Information','condensates','Which biomolecular condensates are associated with a disease or dysregulation type? What PubMed PMIDs support these associations?')">Disease / dysregulation → condensates and supporting PMIDs</button><button class="btn primary quick" onclick="network()">Interactive Network Graph: protein-condensate-disease-C-mod relationships</button></div></div>`;
+  document.getElementById('app').innerHTML = `<div class="hero"><h1>CondensateDB Query Portal</h1><p>An integrated platform for biomolecular condensates, proteins, kinases, diseases, chemical modifiers, and PubMed evidence.</p><p class="course-credit">This project was developed at Boston University as part of BF768, Spring 2026, G. Benson instructor.</p></div><div class="grid" id="stats"></div><div class="card"><h2>Primary Use Cases</h2><div class="quick-list"><button class="btn primary quick" onclick="advancedSearch()">Advanced Search: protein name + condensate / disease / chemical modification / publication filters</button><button class="btn primary quick" onclick="page('Protein Information','proteins','Which biomolecular condensates is a human kinase associated with? What are the condensate types and confidence scores?')">Human kinase → associated condensates, types and confidence scores</button><button class="btn primary quick" onclick="page('Condensate Information','condensates','Which human kinases are contained in a specific condensate? What are their UniProt accessions, gene names, and sequence lengths?')">Condensate → contained human kinases and sequence metadata</button><button class="btn primary quick" onclick="page('Condensate Information','condensates','Which biomolecular condensates are associated with a disease or dysregulation type? What PubMed PMIDs support these associations?')">Disease / dysregulation → condensates and supporting PMIDs</button><button class="btn primary quick" onclick="network()">Interactive Network Graph: protein-condensate-disease-C-mod relationships</button><button class="btn quick" onclick="helpPage()">Help: how to navigate, search, export, and interpret records</button></div></div>`;
   loadStats();
+}
+
+function helpPage() {
+  current = 'help';
+  setNav('help');
+  document.getElementById('app').innerHTML = `
+    <div class="card help-card">
+      <h2>Help</h2>
+      <p>Use this page as a quick guide for navigating CondensateDB and answering common BF768 project-demo questions.</p>
+      <div class="help-grid">
+        <div>
+          <h3>Navigation</h3>
+          <ul>
+            <li><b>Home</b>: summary counts, project use cases, and course attribution.</li>
+            <li><b>Proteins / Kinases</b>: search by UniProt accession, gene name, protein name, or species.</li>
+            <li><b>Condensates</b>: search condensate UID, name, type, species tax ID, and confidence score.</li>
+            <li><b>Diseases</b>: inspect disease-condensate associations and supporting PubMed PMIDs.</li>
+            <li><b>Advanced Search</b>: combine protein-name queries with condensate, disease, chemical-modifier, and publication filters.</li>
+            <li><b>Integrated Query</b>: access chemical modifier, publication evidence, statistical charts, and network tools.</li>
+            <li><b>Network Graph</b>: interactively explore protein-condensate-disease-C-mod relationships.</li>
+          </ul>
+        </div>
+        <div>
+          <h3>Common actions</h3>
+          <ul>
+            <li>Enter a keyword and click <b>Search</b> to filter table records.</li>
+            <li>Use row action buttons such as <b>Condensates</b>, <b>Proteins/Kinases</b>, <b>Diseases</b>, or <b>Evidence</b> to open related records.</li>
+            <li>Click <b>Export Excel</b> on list pages to download the current dataset.</li>
+            <li>In the network graph, click a node or edge to view details in the side panel.</li>
+          </ul>
+        </div>
+      </div>
+      <h3>Project note</h3>
+      <p class="course-credit help-credit">This project was developed at Boston University as part of BF768, Spring 2026, G. Benson instructor.</p>
+    </div>`;
 }
 async function loadStats() {
   const s = await api('api/stats/summary');

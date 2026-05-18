@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>CondensateDB Help</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="topbar">
+  <div class="brand">CondensateDB Help</div>
+  <div class="nav">
+    <a class="btn" id="backLink" href="../login">← Back to Home</a>
+  </div>
+</div>
+<div class="container">
+
+  <div class="hero">
+    <h1>Help & User Guide</h1>
+    <p>Quick instructions for signing in, searching CondensateDB, and using the Interactive Network Graph.</p>
+  </div>
+
+  <div class="card">
+    <h2>Project Team</h2>
+    <ul>
+      <li><b>Jinjie (Jay) Liu</b> — <a href="mailto:fruit88@bu.edu">fruit88@bu.edu</a></li>
+      <li><b>Jason Xu</b> — <a href="mailto:jxu5041@bu.edu">jxu5041@bu.edu</a></li>
+      <li><b>Yimeng (Donald) Dong</b> — <a href="mailto:donald6@bu.edu">donald6@bu.edu</a></li>
+    </ul>
+    <p><b>Supervisor:</b> Berk Tuzcu — <a href="mailto:Berk@iriskinetics.com">Berk@iriskinetics.com</a></p>
+  </div>
+
+  <div class="card">
+    <h2>Data Sources</h2>
+    <p>This project integrates Team3 project input files with authoritative external identifiers and literature links. Each source below is mapped to the corresponding project files or fields.</p>
+    <ul>
+      <li><b>Project-provided curated condensate annotation files</b> — supplied to the project through the external supervisor / <a href="https://iriskinetics.com/" target="_blank" rel="noopener">IRIS Kinetics</a>: <code>condensates.csv</code>, <code>protein2cdcode_v2.1.csv</code>, <code>proteins.csv</code>, <code>condensatopathies.csv</code>, and <code>c-mods.csv</code>.</li>
+      <li><a href="https://www.uniprot.org/uniprotkb?query=%28reviewed%3Atrue%29%20AND%20%28organism_id%3A9606%29%20AND%20%28keyword%3AKW-0418%29" target="_blank" rel="noopener"><b>UniProtKB/Swiss-Prot reviewed human kinase query</b></a> — source for <code>uniprot_human_reviewed_kinases_raw.xlsx</code>; query basis: reviewed human proteins, organism <code>9606</code>, kinase keyword <code>KW-0418</code>.</li>
+      <li><a href="https://pubmed.ncbi.nlm.nih.gov/" target="_blank" rel="noopener"><b>PubMed / NCBI literature records</b></a> — source resolver for PMID evidence fields from <code>condensatopathies.csv</code> and <code>c-mods.csv</code>, normalized into publication and evidence relationship tables.</li>
+      <li><b>Processed database import</b> — <code>sql/condensatedb.sql</code> is the Team3 processed schema/data import artifact generated from the files above for the Bioed MariaDB deployment.</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h2>1. Sign in</h2>
+    <ul>
+      <li>Open the current Team3 sign-in page: <a href="../login"><b>Sign in to CondensateDB</b></a>.</li>
+      <li>Select the correct role before signing in: <b>User</b> for query access or <b>Administrator</b> for admin management.</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h2>2. Search and query data</h2>
+    <ul>
+      <li><b>Proteins / Kinases / Condensates / Diseases</b>: search by gene name, UniProt accession, condensate name, disease, or keyword.</li>
+      <li><b>Advanced Search</b>: combine protein keywords with condensate, disease, chemical modifier, and publication filters.</li>
+      <li><b>Integrated Query</b>: access chemical modifier queries, literature evidence, charts, and the network graph from one page.</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h2>3. Interactive Network Graph</h2>
+    <ul>
+      <li>Click <b>Network Graph</b> on the portal navigation bar or from the Integrated Query section.</li>
+      <li>Use the keyword box to search proteins, condensates, diseases, chemical modifiers, or PubMed IDs.</li>
+      <li>Select a relation type and graph limit, then click <b>Load Graph</b>.</li>
+      <li>Click any node or edge to view details in the right-side panel.</li>
+    </ul>
+  </div>
+</div>
+<script>
+(function(){
+  const params = new URLSearchParams(location.search);
+  const from = params.get('from');
+  const back = document.getElementById('backLink');
+  if (from === 'portal') {
+    back.href = '../index';
+    back.textContent = '← Back to Portal';
+  } else {
+    back.href = '../login';
+    back.textContent = '← Back to Home';
+  }
+})();
+</script>
+</body>
+</html>

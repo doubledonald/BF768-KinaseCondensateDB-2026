@@ -3,13 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <title>CondensateDB Help</title>
-  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="/students_26/Team3/final_project/app/static/css/style.css?v=20260517-final">
 </head>
 <body>
 <div class="topbar">
   <div class="brand">CondensateDB Help</div>
   <div class="nav">
-    <a class="btn" id="backLink" href="../login">← Back to Home</a>
+    <a class="btn" id="backLink" href="/students_26/Team3/final_project/app/login">← Back to Home</a>
   </div>
 </div>
 <div class="container">
@@ -43,7 +43,7 @@
   <div class="card">
     <h2>1. Sign in</h2>
     <ul>
-      <li>Open the current Team3 sign-in page: <a href="../login"><b>Sign in to CondensateDB</b></a>.</li>
+      <li>Open the current Team3 sign-in page: <a href="/students_26/Team3/final_project/app/login"><b>Sign in to CondensateDB</b></a>.</li>
       <li>Select the correct role before signing in: <b>User</b> for query access or <b>Administrator</b> for admin management.</li>
     </ul>
   </div>
@@ -73,10 +73,10 @@
   const from = params.get('from');
   const back = document.getElementById('backLink');
   if (from === 'portal') {
-    back.href = '../index';
+    back.href = '/students_26/Team3/final_project/app/index';
     back.textContent = '← Back to Portal';
   } else {
-    back.href = '../login';
+    back.href = '/students_26/Team3/final_project/app/login';
     back.textContent = '← Back to Home';
   }
 })();

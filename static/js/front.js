@@ -39,20 +39,70 @@ async function loadList(p = 1) {
   document.getElementById('list').innerHTML = tableHtml(cols[current], data.items, actions) + pagerHtml(state);
 }
 
-async function optionHtml(name, placeholder) {
-  const rows = await api(`api/options/${name}`);
-  return `<option value="">${placeholder}</option>` + rows.map(o => `<option value="${esc(o.value)}">${esc(o.label)} (${esc(o.value)})</option>`).join('');
+const optionCache = {};
+
+async function loadOptions(name) {
+  if (!optionCache[name]) optionCache[name] = await api(`api/options/${name}`);
+  return optionCache[name];
+}
+
+function autocompleteField(id, label, placeholder) {
+  return `<div class="form-row autocomplete-field"><label>${label}</label><input id="${id}Text" class="input" autocomplete="off" placeholder="${placeholder}" oninput="renderAdvancedSuggestions('${id}')" onfocus="renderAdvancedSuggestions('${id}')" onkeydown="handleAdvancedSuggestKey(event,'${id}')"><input id="${id}" type="hidden"><div id="${id}Suggest" class="suggest-box"></div><small class="field-hint">Type to match the most relevant database option, then choose one suggestion.</small></div>`;
+}
+
+async function prepareAutocomplete(id, optionName) {
+  const rows = await loadOptions(optionName);
+  const el = document.getElementById(id + 'Text');
+  if (el) el.dataset.options = JSON.stringify(rows);
+}
+
+function optionScore(o, q) {
+  const label = String(o.label || '').toLowerCase();
+  const value = String(o.value || '').toLowerCase();
+  if (!q) return 1;
+  if (label === q || value === q) return 100;
+  if (label.startsWith(q) || value.startsWith(q)) return 80;
+  if (label.includes(q) || value.includes(q)) return 55;
+  return 0;
+}
+
+function renderAdvancedSuggestions(id) {
+  const input = document.getElementById(id + 'Text');
+  const hidden = document.getElementById(id);
+  const box = document.getElementById(id + 'Suggest');
+  if (!input || !hidden || !box) return;
+  hidden.value = '';
+  const q = input.value.trim().toLowerCase();
+  const rows = JSON.parse(input.dataset.options || '[]');
+  const matches = rows.map(o => ({...o, score: optionScore(o, q)})).filter(o => o.score > 0).sort((a, b) => b.score - a.score || String(a.label).localeCompare(String(b.label))).slice(0, 8);
+  if (!input.value.trim() || matches.length === 0) { box.innerHTML = ''; box.classList.remove('open'); return; }
+  box.innerHTML = matches.map(o => `<button type="button" class="suggest-item" data-value="${esc(o.value)}" data-label="${esc(o.label)}" onclick="chooseAdvancedOption('${id}',this.dataset.value,this.dataset.label)"><b>${esc(o.label)}</b><span>${esc(o.value)}</span></button>`).join('');
+  box.classList.add('open');
+}
+
+function chooseAdvancedOption(id, value, label) {
+  document.getElementById(id).value = value;
+  document.getElementById(id + 'Text').value = `${label} (${value})`;
+  document.getElementById(id + 'Suggest').classList.remove('open');
+  document.getElementById(id + 'Suggest').innerHTML = '';
+}
+
+function handleAdvancedSuggestKey(event, id) {
+  if (event.key === 'Enter') { event.preventDefault(); const first = document.querySelector(`#${id}Suggest .suggest-item`); if (first) first.click(); else loadAdvanced(1); }
+  if (event.key === 'Escape') document.getElementById(id + 'Suggest')?.classList.remove('open');
 }
 
 async function advancedSearch() {
   current = 'advanced';
   state.page = 1;
   setNav('advanced');
-  document.getElementById('app').innerHTML = `<div class="card"><h2>Advanced Search</h2><p>Search by protein name, then narrow results by condensate, disease, chemical modification, or publication evidence.</p><div class="grid"><div class="form-row"><label>Search by protein name</label><input id="advProteinName" class="input" placeholder="Protein name keyword"></div><div class="form-row"><label>Filter by condensate</label><select id="advCondensate" class="input"><option>Loading...</option></select></div><div class="form-row"><label>Filter by disease</label><select id="advDisease" class="input"><option>Loading...</option></select></div><div class="form-row"><label>Filter by chemical modification</label><select id="advCmod" class="input"><option>Loading...</option></select></div><div class="form-row"><label>Filter by publication</label><select id="advPmid" class="input"><option>Loading...</option></select></div></div><div class="toolbar"><button class="btn primary" onclick="loadAdvanced(1)">Search</button><button class="btn" onclick="clearAdvanced()">Clear</button></div><div id="list"></div></div>`;
-  document.getElementById('advCondensate').innerHTML = await optionHtml('condensates', 'All Condensates');
-  document.getElementById('advDisease').innerHTML = await optionHtml('diseases', 'All Diseases');
-  document.getElementById('advCmod').innerHTML = await optionHtml('cmods', 'All Chemical Modifications');
-  document.getElementById('advPmid').innerHTML = await optionHtml('publications', 'All Publications');
+  document.getElementById('app').innerHTML = `<div class="card"><h2>Advanced Search</h2><p>Search by protein name, then narrow results by condensate, disease, chemical modification, or publication evidence. Start typing in any filter to see the closest database matches.</p><div class="grid advanced-grid"><div class="form-row"><label>Search by protein name</label><input id="advProteinName" class="input" placeholder="Protein name keyword" onkeydown="if(event.key==='Enter') loadAdvanced(1)"><small class="field-hint">Free-text match against protein names.</small></div>${autocompleteField('advCondensate', 'Filter by condensate', 'Type condensate name or ID')}${autocompleteField('advDisease', 'Filter by disease', 'Type disease name or ID')}${autocompleteField('advCmod', 'Filter by chemical modification', 'Type modifier name or ID')}${autocompleteField('advPmid', 'Filter by publication', 'Type PMID')}</div><div class="toolbar"><button class="btn primary" onclick="loadAdvanced(1)">Search</button><button class="btn" onclick="clearAdvanced()">Clear</button></div><div id="list"></div></div>`;
+  await Promise.all([
+    prepareAutocomplete('advCondensate', 'condensates'),
+    prepareAutocomplete('advDisease', 'diseases'),
+    prepareAutocomplete('advCmod', 'cmods'),
+    prepareAutocomplete('advPmid', 'publications')
+  ]);
   loadAdvanced(1);
 }
 
@@ -81,6 +131,10 @@ function clearAdvanced() {
   ['advProteinName', 'advCondensate', 'advDisease', 'advCmod', 'advPmid'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.value = '';
+    const txt = document.getElementById(id + 'Text');
+    if (txt) txt.value = '';
+    const box = document.getElementById(id + 'Suggest');
+    if (box) { box.innerHTML = ''; box.classList.remove('open'); }
   });
   loadAdvanced(1);
 }
@@ -128,7 +182,7 @@ async function loadStats() {
 }
 function complex() {
   setNav('complex');
-  document.getElementById('app').innerHTML = `<div class="card"><h2>Integrated Query</h2><div class="tabs"><button class="btn primary" onclick="advancedSearch()">Advanced Search</button><button class="btn primary" onclick="page('Chemical Modifier Query','cmods','Query C-mod information and view affected condensates')">Chemical Modifier Query</button><button class="btn primary" onclick="page('Literature Evidence Query','publications','Search evidence by PubMed PMID')">Literature Evidence Query</button><button class="btn primary" onclick="charts()">Statistical Charts</button><button class="btn primary" onclick="network()">Network Graph</button></div></div><div id="complexBox"></div>`;
+  document.getElementById('app').innerHTML = `<div class="card integrated-card"><h2>Integrated Query</h2><p>Choose a guided analysis view. Each tile opens one query workflow with more breathing room than the compact tab bar.</p><div class="query-grid"><button class="query-tile" onclick="advancedSearch()"><b>Advanced Search</b><span>Combine protein, condensate, disease, modifier, and publication filters</span></button><button class="query-tile" onclick="page('Chemical Modifier Query','cmods','Query C-mod information and view affected condensates')"><b>Chemical Modifier Query</b><span>Review modifiers and affected condensates</span></button><button class="query-tile" onclick="page('Literature Evidence Query','publications','Search evidence by PubMed PMID')"><b>Literature Evidence</b><span>Search PubMed evidence by PMID</span></button><button class="query-tile" onclick="charts()"><b>Statistical Charts</b><span>Summarize major counts and rankings visually</span></button><button class="query-tile" onclick="network()"><b>Network Graph</b><span>Explore protein-condensate-disease-C-mod relationships</span></button></div></div><div id="complexBox"></div>`;
 }
 async function charts() {
   document.getElementById('complexBox').innerHTML = '<div class="charts"><div class="card chart" id="c1"></div><div class="card chart" id="c2"></div><div class="card chart" id="c3"></div><div class="card chart" id="c4"></div><div class="card chart" id="c5"></div></div>';

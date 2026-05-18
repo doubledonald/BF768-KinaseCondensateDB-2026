@@ -63,10 +63,15 @@ def verify_password(password, stored):
 
 def current_user_payload():
     auth = request.headers.get('Authorization', '')
-    if not auth.startswith('Bearer '):
+    token = ''
+    if auth.startswith('Bearer '):
+        token = auth[7:]
+    else:
+        token = request.headers.get('X-Access-Token', '')
+    if not token:
         return None
     try:
-        return jwt.decode(auth[7:], current_app.config['JWT_SECRET'], algorithms=['HS256'])
+        return jwt.decode(token, current_app.config['JWT_SECRET'], algorithms=['HS256'])
     except Exception:
         return None
 

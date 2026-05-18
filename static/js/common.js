@@ -5,7 +5,7 @@ function hasUsableToken(token){
 function authHeaders(){
   const token = getToken();
   const headers = {'Content-Type':'application/json'};
-  if (hasUsableToken(token)) headers.Authorization = `Bearer ${token}`;
+  if (hasUsableToken(token)) { headers.Authorization = `Bearer ${token}`; headers['X-Access-Token'] = token; }
   return headers;
 }
 function checkLogin(){
@@ -27,4 +27,4 @@ function tableHtml(cols, rows, actions){return `<div class="table-wrap"><table><
 function pageCount(state){return Math.ceil((Number(state.total)||0)/(Number(state.size)||10))||1}
 function jumpToPage(loaderName,inputId,maxPage){const el=document.getElementById(inputId);if(!el)return;let p=parseInt(el.value,10);if(!Number.isFinite(p)){alert('Please enter a page number');return}p=Math.max(1,Math.min(p,Number(maxPage)||1));const fn=window[loaderName];if(typeof fn==='function')fn(p)}
 function pagerHtml(state,loaderName='loadList',inputId='pageJump'){const pages=pageCount(state);return `<div class="pagination"><div class="pager-nav"><button class="btn small" ${state.page<=1?'disabled':''} onclick="${loaderName}(${state.page-1})">Previous</button><span class="pager-info">Page ${state.page} / ${pages}, Total ${state.total}</span><button class="btn small" ${state.page>=pages?'disabled':''} onclick="${loaderName}(${state.page+1})">Next</button></div><label class="page-jump">Jump to <input id="${inputId}" class="page-jump-input" type="number" min="1" max="${pages}" placeholder="Page" onkeydown="if(event.key==='Enter') jumpToPage('${loaderName}','${inputId}',${pages})"><button class="btn small" onclick="jumpToPage('${loaderName}','${inputId}',${pages})">Go</button></label></div>`}
-async function exportUrl(name){const kw=encodeURIComponent(document.getElementById('kw')?.value||'');const r=await fetch(`api/${name}/export?keyword=${kw}&type=excel`,{headers:{'Authorization':'Bearer '+localStorage.getItem('token')}});if(r.status===401){alert('Login expired');logout();return}if(!r.ok){alert('Export failed');return}const blob=await r.blob();const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`${name}.xlsx`;document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(a.href)}
+async function exportUrl(name){const kw=encodeURIComponent(document.getElementById('kw')?.value||'');const token=getToken();const r=await fetch(`api/${name}/export?keyword=${kw}&type=excel`,{headers:{'Authorization':'Bearer '+token,'X-Access-Token':token}});if(r.status===401){alert('Login expired');logout();return}if(!r.ok){alert('Export failed');return}const blob=await r.blob();const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`${name}.xlsx`;document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(a.href)}

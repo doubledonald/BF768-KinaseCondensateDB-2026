@@ -1,86 +1,39 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8">
-    <title>CondensateDB Login</title>
-    <link rel="stylesheet" href="/students_26/Team3/final_project/app/static/css/style.css?v=20260517-final">
-  </head>
-  <body class="auth-body">
-    <div class="condensate-auth-bg" aria-hidden="true">
-      <span class="condensate-auth-orbit orbit-a"></span>
-      <span class="condensate-auth-orbit orbit-b"></span>
-      <span class="condensate-auth-orbit orbit-c"></span>
-      <span class="condensate-auth-node node-a"></span>
-      <span class="condensate-auth-node node-b"></span>
-      <span class="condensate-auth-node node-c"></span>
-    </div>
-
-    <div class="auth-left">
-      <h1>CondensateDB</h1>
-      <p>
-        An integrated query and management platform for biomolecular condensates, proteins,
-        kinases, diseases, chemical modifiers, and literature evidence.
-      </p>
-      <p class="course-credit">This project was developed at Boston University as part of BF768, Spring 2026, G. Benson instructor.</p>
-    </div>
-
-    <div class="auth-card">
-      <h2>Sign In</h2>
-      <div class="form-row">
-        <label>Username</label>
-        <input id="username" class="input">
-      </div>
-      <div class="form-row">
-        <label>Password</label>
-        <input id="password" type="password" class="input">
-      </div>
-      <label>Role</label>
-      <div class="radio">
-        <label>
-          <input type="radio" name="role" value="User" checked> User
-        </label>
-        <label>
-          <input type="radio" name="role" value="Administrator"> Administrator
-        </label>
-      </div>
-      <button class="btn primary" onclick="login()">Sign In</button>
-      <button class="btn" onclick="location.href='register'">Register</button>
-      <button class="btn" onclick="location.href='/students_26/Team3/final_project/app/static/help.html?from=home&v=20260517-final'">Help</button>
-    </div>
-
-    <script>
-      async function login(){
-        const username=document.getElementById('username').value.trim(),
-          password=document.getElementById('password').value.trim(),
-          roleLabel=document.querySelector("input[name=role]:checked")?.value,
-          role=roleLabel==="Administrator"?"admin":"user";
-
-        if(!username||!password||!role){
-          alert('Username, password and role are required');
-          return
-        }
-
-        const r=await fetch('api/auth/login',{
-          method:'POST',
-          headers:{'Content-Type':'application/json'},
-          body:JSON.stringify({username,password,role})
-        });
-
-        const j=await r.json();
-        if(j.code!==200){
-          alert(j.msg);
-          return
-        }
-
-        const token=(j.data||{}).token;
-        if(typeof token!=='string'||token.trim()===''||token==='undefined'||token==='null'){
-          alert('Login failed: token missing.');
-          return
-        }
-        localStorage.setItem('token',token);
-        localStorage.setItem('user',JSON.stringify((j.data||{}).user||{}));
-        location.href=role==='admin'?'admin':'index'
-      }
-    </script>
-  </body>
+<head>
+  <meta charset="UTF-8">
+  <title>CondensateDB Login</title>
+  <link rel="stylesheet" href="/students_26/Team3/final_project/app/static/css/style.css?v=20260518-fancy2">
+</head>
+<body class="auth-body">
+<div class="auth-left">
+  <div class="badge-tag">Scientific Database Project</div>
+  <h1>KinaseCondensateDB</h1>
+  <p class="hero-desc">Explore kinase–condensate interactions, disease evidence, and chemical modifiers in one integrated relational database.</p>
+  <p class="course-credit">This project was developed at Boston University as part of BF768, Spring 2026, G. Benson instructor.</p>
+  <div class="hero-stats">
+    <div class="hs-item"><strong>632</strong><span>Reviewed Kinases</span></div>
+    <div class="hs-item"><strong>32k+</strong><span>Condensates</span></div>
+    <div class="hs-item"><strong>9</strong><span>Relational Tables</span></div>
+  </div>
+</div>
+<div class="auth-card">
+  <h2>Sign In to Portal</h2>
+  <div class="form-row"><label>Username</label><input id="username" class="input" placeholder="e.g. xiaoming"></div>
+  <div class="form-row"><label>Password</label><input id="password" type="password" class="input" placeholder="e.g. 123456"></div>
+  <label>Role</label>
+  <div class="radio">
+    <label><input type="radio" name="role" value="User" checked> User</label>
+    <label><input type="radio" name="role" value="Administrator"> Administrator</label>
+  </div>
+  <button class="btn primary full-width" onclick="login()">Access Database</button>
+  <div class="auth-links">
+    <a href="#" onclick="location.href='register'">Create account</a>
+    <a href="#" onclick="location.href='/students_26/Team3/final_project/app/static/help.html?from=home&v=20260518-fancy2'">Help</a>
+  </div>
+</div>
+<script>
+async function login(){const username=document.getElementById('username').value.trim(),password=document.getElementById('password').value.trim(),roleLabel=document.querySelector("input[name=role]:checked")?.value,role=roleLabel==="Administrator"?"admin":"user";if(!username||!password||!role){alert('Username, password and role are required');return}const r=await fetch('api/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username,password,role})});const j=await r.json();if(j.code!==200){alert(j.msg);return}const token=(j.data||{}).token;if(typeof token!=='string'||token.trim()===''||token==='undefined'||token==='null'){alert('Login failed: token missing.');return}localStorage.setItem('token',token);localStorage.setItem('user',JSON.stringify((j.data||{}).user||{}));location.href=roleLabel==='Administrator'?'admin':'index'}
+</script>
+</body>
 </html>
